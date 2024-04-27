@@ -1,0 +1,9 @@
+checkpoints/
+.vscode/
+__pycache__/
+data/
+output/
+docs/
+files.txt
+args.yaml
+*.pyc

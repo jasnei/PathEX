@@ -1,0 +1,9 @@
+/.vscode
+/data
+/__pycache__
+test.py
+*.log
+*.out
+test.sh
+dev_blur.py
+docs/

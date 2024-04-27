@@ -95,7 +95,7 @@ pip install setuptools==57.5.0
 Contributions are welcome! Please read the contributing guidelines before getting started.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Citation
 If you use this tool in your research, please cite the following paper:

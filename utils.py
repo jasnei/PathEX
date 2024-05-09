@@ -20,7 +20,7 @@ def get_specified_files(folder_path: str,
         Parameters:
             - folder_path: str, The folder you want to get the files
             - suffixes   : list, list of all suffixes you want to get
-            - recurssive : bool, Which means if get from the folder of the folder_path or not. default is False
+            - recursive : bool, Which means if get from the folder of the folder_path or not. default is False
 
         Return:
             -  List of the files founded
@@ -35,8 +35,8 @@ def get_specified_files(folder_path: str,
             files.extend(glob.glob(path, recursive=recursive))
         return files
 
-def supress_ctypes_warnings():
-    # for windows, justload "libtiff-5.dll" 
+def suppress_ctypes_warnings():
+    # for windows, just load "libtiff-5.dll" 
     # linux, because the version might be different, the lib folder name
     # would be different, some is "/usr/lib/x86_64-linux-gnu", other is
     # "/usr/lib/x86_64-redhat-linux6E", or search your folder for libtiff.so.5

@@ -19,9 +19,9 @@ from PIL import Image, ImageDraw
 from shapely import geometry
 
 from logger import get_localtime, logger
-from utils import get_dir_filename, supress_ctypes_warnings
+from utils import get_dir_filename, suppress_ctypes_warnings
 
-supress_ctypes_warnings()
+suppress_ctypes_warnings()
 
 
 def open_slide(file_path):
@@ -246,10 +246,10 @@ def parse_xml_annotation(ano_file, tag='Annotation', attrib_name='PartOfGroup',
                         if vertices.tag.lower() not in ('vertices', 'coordinates'):
                             continue
                         temp = []
-                        for vertiex in vertices:
-                            # print(vertiex.attrib['X'])
-                            x = float(vertiex.attrib['X'])
-                            y = float(vertiex.attrib['Y'])
+                        for vertex in vertices:
+                            # print(vertex.attrib['X'])
+                            x = float(vertex.attrib['X'])
+                            y = float(vertex.attrib['Y'])
                             temp.append([x, y])
 
                         if temp:
@@ -263,7 +263,7 @@ def parse_xml_annotation(ano_file, tag='Annotation', attrib_name='PartOfGroup',
 def save(image, filename):
     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     state = cv2.imwrite(filename, image)
-    # print('{}, shap {}, saved: {}'.format(filename, image.shape, state))
+    # print('{}, shape {}, saved: {}'.format(filename, image.shape, state))
     return None
 
 
@@ -291,7 +291,7 @@ def get_mask_area(mask, contour=True):
 
     Args:
         - mask: (numpy.ndarray), input binary mask
-        - contour: (bool), if get contour area or nonezero
+        - contour: (bool), if get contour area or nonzero
     """
     w, h = mask.shape[:2]
     if contour:
@@ -323,17 +323,17 @@ def get_white_region_ratio(img, blur_size=(5, 5), mask_inv=False, contour=True, 
     return ratio
 
 
-def is_background(img, object_thres=0.1):
+def is_background(img, object_thresh=0.1):
     """
     input image must be in RGB order
-    object_thres default is 0.1, means 10% is cover by object, and  the immage 90% is white. you could use 
-    this object_thres to control how much the region is to determin whether tile is background or foreground object
+    object_thresh default is 0.1, means 10% is cover by object, and  the image 90% is white. you could use 
+    this object_thresh to control how much the region is to determine whether tile is background or foreground object
     """
     if not isinstance(img, np.ndarray):
         img = np.asarray(img)
     ratio = get_white_region_ratio(img)
     state = False
-    if ratio <= object_thres:
+    if ratio <= object_thresh:
         state = True
     return state
 
@@ -344,7 +344,7 @@ def compute_intersection_area(multipolygons, rectangle):
     """
     # print(f'type of multipolygons: {type(multipolygons)}, {type(rectangle)}')
 
-    # with np.errstate(invalid='ignore'): # This will supress the intersects RuntimeWarning, but slow down
+    # with np.errstate(invalid='ignore'): # This will suppress the intersects RuntimeWarning, but slow down
     state = multipolygons.intersects(rectangle)
 
     if state:
@@ -359,7 +359,7 @@ def compute_intersection_area(multipolygons, rectangle):
     # return intersection.area, intersection
 
 
-def get_rectangle_fourpoints(loc):
+def get_rectangle_four_points(loc):
     """generate rectangle four points, return in four points anti-clockwise"""
     top_left = loc[0]
     bottom_right = loc[1]
@@ -370,14 +370,14 @@ def get_rectangle_fourpoints(loc):
 
 def tile_is_in_regions(tile_polygon, multipolygons, area_ratio=(0.20, 1.0)):
     """
-    tile is in regions, or interect with regions
+    tile is in regions, or intersect with regions
 
     Args:
     - top_left: (int, int), tuple of (int, int)
     - w: (int), width of the tile
     - h: (int), height of the tile
     - regions: (shapely.geometry.multipolygon.MultiPolygon), 
-    - area_ratio: (float, flaot), tuple of (float, float), is range of area ratio from 0.0 to 1.0, (0, 1.0]
+    - area_ratio: (float, float), tuple of (float, float), is range of area ratio from 0.0 to 1.0, (0, 1.0]
     """
     tile_area = tile_polygon.area
 
@@ -390,7 +390,7 @@ def tile_is_in_regions(tile_polygon, multipolygons, area_ratio=(0.20, 1.0)):
 
 
 def points_to_contour(four_points):
-    # top_left, top_right, bottom_left, bottom_right = generate_rectangle_fourpoints(top_left, w, h)
+    # top_left, top_right, bottom_left, bottom_right = generate_rectangle_four_points(top_left, w, h)
     contour = np.array([four_points]).reshape(-1, 1, 2)
     return contour
 
@@ -451,13 +451,13 @@ def simple_cell_detect(img, detector):
     if not isinstance(img, np.ndarray):
         img = np.asarray(img)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    keypoints = detector.detect(img)
-    return len(keypoints)
+    key_points = detector.detect(img)
+    return len(key_points)
 
 
 def is_page1_thumbnail(file_path):
     """Check page 1 is thumbnail image or not. Some slide thumbnails is page 1, but some slide thumbnails
-        is last page (Phlips, or the sequence of the page maybe altered by someone).
+        is last page (Philips, or the sequence of the page maybe altered by someone).
     """
     tif = tifffile.TiffFile(file_path)
     pages = tif.pages
@@ -493,7 +493,7 @@ def fill_contour_to_image(image, contours, color):
 
 
 def draw_extract_regions(file_path, slide_properties, file_name, num_workers, level, locations,
-                         extract_coordinates, exclude_coordinates, extract_mode, object_thres,
+                         extract_coordinates, exclude_coordinates, extract_mode, object_thresh,
                          area_ratio, random_save, random_save_ratio, cell_detector=None,
                          cell_num_thresh=0, thickness=2, color=(0, 255, 0), filled=False, scale_factor=64):
     """
@@ -509,7 +509,7 @@ def draw_extract_regions(file_path, slide_properties, file_name, num_workers, le
         - deep_gen: (generator), deepzoom generator
         - extractor_coordinates: (list), list of coordinate to extract
         - extract_mode: (str), model to extract, one of (slide, annotation)
-        - object_thres: (float), determine how much object is to be considered as backgroud, default is 0.1,
+        - object_thresh: (float), determine how much object is to be considered as background, default is 0.1,
                         means if less then 10% object, then will be consider as background.
         - thickness: (int), thickness of the contour line
         - color: (tuple), (r, g, b) color of the contour line, default is (0, 255, 0) which means green
@@ -533,7 +533,7 @@ def draw_extract_regions(file_path, slide_properties, file_name, num_workers, le
             key = level
 
         # tifffile pages is fast and simple, but sometimes have index error, and it's not caused by the "key" we pass
-        # openslide could fix this bug, but openslide needs more than twice memory which will cause memmory overflow
+        # openslide could fix this bug, but openslide needs more than twice memory which will cause memory overflow
         # One could fix this is try to fix the tifffile bug in line 8161
         try:
             source_image = pages[key].asarray()
@@ -564,7 +564,7 @@ def draw_extract_regions(file_path, slide_properties, file_name, num_workers, le
     save_que = Queue()
     contours = tiling_for_contour(tile_que, save_que, num_workers, locations,
                                   extract_coordinates_poly, exclude_coordinates_poly,
-                                  extract_mode, object_thres, area_ratio, random_save, random_save_ratio,
+                                  extract_mode, object_thresh, area_ratio, random_save, random_save_ratio,
                                   cell_detector, cell_num_thresh)
 
     ratio = 1 / scale_factor
@@ -630,12 +630,12 @@ def get_tile_location(slide, slide_properties, level, tile_size,
         loc_info = ((y_l0, x_l0), level, (tile_width_l, tile_height_l))
 
         tile_name = ''.join((slide_name, '_', str(loc_info), save_format))
-        filename = os.path.join(save_dir, tile_name)
-        maskname = os.path.join(mask_dir, 'masks', tile_name)
+        file_name = os.path.join(save_dir, tile_name)
+        mask_name = os.path.join(mask_dir, 'masks', tile_name)
         prob = random.uniform(0, 1)
 
         tile_info = dict(slide=slide, loc=loc_l0, loc_l=loc_l,
-                         filename=filename, maskname=maskname, prob=prob)
+                         file_name=file_name, mask_name=mask_name, prob=prob)
         tile_locations.append(tile_info)
 
     return tile_locations, num_tiles_width, num_tiles_height
@@ -666,7 +666,7 @@ def generate_slide_tile_locations(slide, slide_name, slide_properties, level, ti
     tls = np.random.randint(
         (0, 0), (slide_width-tile_size, slide_height-tile_size), size=(counts, 2))
 
-    # Threre are about 10,000 patch generated, so filtering centroids will be very slow
+    # There are about 10,000 patch generated, so filtering centroids will be very slow
     # might be considered to generate centroids from tissue instead of whole slide
     # you could uncomment the following line to enable filtering function, it double the time consuming
     tls = iou_filter_locations(tls, 0, 0, tile_size, iou_thresh)
@@ -683,11 +683,11 @@ def generate_slide_tile_locations(slide, slide_name, slide_properties, level, ti
         loc_info = ((y_l0, x_l0), level, (tile_size, tile_size))
 
         tile_name = ''.join((slide_name, '_', str(loc_info), save_format))
-        filename = os.path.join(save_dir, tile_name)
+        file_name = os.path.join(save_dir, tile_name)
         prob = random.uniform(0, 1)
 
         tile_info = dict(slide=slide, loc=loc_l0, loc_l=loc_l,
-                         filename=filename, prob=prob)
+                         file_name=file_name, prob=prob)
         tile_locations.append(tile_info)
 
     return tile_locations, num_tiles_width, num_tiles_height
@@ -739,12 +739,12 @@ def generate_region_tile_locations(slide, slide_name, slide_properties, level, t
             loc_info = ((y_l0, x_l0), level, (tile_size, tile_size))
             # print(loc_l, loc_l0)
             tile_name = ''.join((slide_name, '_', str(loc_info), save_format))
-            filename = os.path.join(save_dir, tile_name)
-            maskname = os.path.join(mask_dir, 'masks', tile_name)
+            file_name = os.path.join(save_dir, tile_name)
+            mask_name = os.path.join(mask_dir, 'masks', tile_name)
             prob = random.uniform(0, 1)
 
             tile_info = dict(slide=slide, loc=loc_l0, loc_l=loc_l,
-                             filename=filename, maskname=maskname, prob=prob)
+                             file_name=file_name, mask_name=mask_name, prob=prob)
             tile_locations.append(tile_info)
 
     return tile_locations, num_tiles_width, num_tiles_height
@@ -821,7 +821,7 @@ def iou_filter_locations(tls, delta_x, delta_y, tile_size, iou_thresh=0.5):
 
 def tile_contour(tile_que, save_que, random_save, random_save_ratio,
                  extract_coordinates, exclude_coordinates,
-                 extract_mode, object_thres, area_ratio,
+                 extract_mode, object_thresh, area_ratio,
                  cell_detector=None, cell_num_thresh=0):
     while True:
         data = tile_que.get()
@@ -836,7 +836,7 @@ def tile_contour(tile_que, save_que, random_save, random_save_ratio,
 
         if extract_mode == 'annotation':
             # same as tile_polygon.exterior.coords[:-1]
-            four_points = get_rectangle_fourpoints(loc_l)
+            four_points = get_rectangle_four_points(loc_l)
             minx, miny, maxx, maxy = loc_l[0][0], loc_l[0][1], loc_l[1][0], loc_l[1][1]
             tile_polygon = geometry.box(minx, miny, maxx, maxy)
 
@@ -847,7 +847,7 @@ def tile_contour(tile_que, save_que, random_save, random_save_ratio,
             if P and not Q:
                 tile = get_tile(slide, level_size, args)
 
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
 
                 if random_save:
@@ -867,9 +867,9 @@ def tile_contour(tile_que, save_que, random_save, random_save_ratio,
             if random_save:
                 if prob > random_save_ratio:
                     continue
-                four_points = get_rectangle_fourpoints(loc_l)
+                four_points = get_rectangle_four_points(loc_l)
                 tile = get_tile(slide, level_size, args)
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
                 if cell_detector is not None:
                     cell_num = simple_cell_detect(tile, cell_detector)
@@ -877,9 +877,9 @@ def tile_contour(tile_que, save_que, random_save, random_save_ratio,
                         continue
                 save_que.put(points_to_contour(four_points))
             else:
-                four_points = get_rectangle_fourpoints(loc_l)
+                four_points = get_rectangle_four_points(loc_l)
                 tile = get_tile(slide, level_size, args)
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
                 if cell_detector is not None:
                     cell_num = simple_cell_detect(tile, cell_detector)
@@ -891,7 +891,7 @@ def tile_contour(tile_que, save_que, random_save, random_save_ratio,
 
 def tiling_for_contour(tile_que, save_que, num_workers, locations,
                        extract_coordinates, exclude_coordinates,
-                       extract_mode, object_thres, area_ratio, random_save,
+                       extract_mode, object_thresh, area_ratio, random_save,
                        random_save_ratio, cell_detector=None, cell_num_thresh=0):
     if extract_mode == 'annotation':
         process_workers = num_workers
@@ -908,7 +908,7 @@ def tiling_for_contour(tile_que, save_que, num_workers, locations,
     for _ in range(process_workers):
         process_thread = Thread(target=tile_contour, args=(tile_que, save_que, random_save, random_save_ratio,
                                                            extract_coordinates, exclude_coordinates,
-                                                           extract_mode, object_thres, area_ratio,
+                                                           extract_mode, object_thresh, area_ratio,
                                                            cell_detector, cell_num_thresh))
         process_thread.start()
         process_threads.append(process_thread)
@@ -957,7 +957,7 @@ def get_tile(slide, size, args):
 
 
 def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coordinates,
-                 random_save, random_save_ratio, extract_mode, object_thres, area_ratio,
+                 random_save, random_save_ratio, extract_mode, object_thresh, area_ratio,
                  cell_detector=None, cell_num_thresh=0):
     while True:
         data = tile_que.get()
@@ -969,7 +969,7 @@ def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coo
         level_size = args[-1]
         loc_l = data['loc_l']
 
-        tile_name = data['filename']
+        tile_name = data['file_name']
         prob = data['prob']
 
         if extract_mode == 'annotation':
@@ -983,7 +983,7 @@ def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coo
             if P and not Q:
                 tile = get_tile(slide, level_size, args)
                 # print(type(intersection_extract))
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
                 # TODO: here could do some transformation for the tile: color normalization
 
@@ -1001,7 +1001,7 @@ def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coo
                             continue
                 tile_mask = get_tile_mask(
                     tile_polygon, intersection_extract, tile_size)
-                mask_name = data['maskname']
+                mask_name = data['mask_name']
                 save_que.put((tile_name, tile, mask_name, tile_mask))
         elif extract_mode == 'slide':
             if random_save:
@@ -1011,7 +1011,7 @@ def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coo
 
                 tile = get_tile(slide, level_size, args)
 
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
                 if cell_detector is not None:
                     cell_num = simple_cell_detect(tile, cell_detector)
@@ -1021,7 +1021,7 @@ def process_tile(tile_que, save_que, tile_size, extract_coordinates, exclude_coo
             else:
                 # do not random save
                 tile = get_tile(slide, level_size, args)
-                if is_background(tile, object_thres):
+                if is_background(tile, object_thresh):
                     continue
                 if cell_detector is not None:
                     cell_num = simple_cell_detect(tile, cell_detector)
@@ -1096,7 +1096,7 @@ def save_tile_h5(save_path, save_que):
 def tiling_for_h5(tile_que, save_que, h5_save_fp,
                   num_workers, locations, extract_coordinates,
                   exclude_coordinates, random_save, random_save_ratio,
-                  extract_mode, object_thres, area_ratio):
+                  extract_mode, object_thresh, area_ratio):
     # TODO: this is outdated, might need to update
     tile_threads = []
     for _ in range(1):
@@ -1108,7 +1108,7 @@ def tiling_for_h5(tile_que, save_que, h5_save_fp,
     for _ in range(num_workers):
         process_thread = Thread(target=process_tile, args=(tile_que, save_que,
                                                            extract_coordinates, exclude_coordinates, random_save,
-                                                           random_save_ratio, extract_mode, object_thres, area_ratio,
+                                                           random_save_ratio, extract_mode, object_thresh, area_ratio,
                                                            area_ratio))
         process_thread.start()
         process_threads.append(process_thread)
@@ -1129,7 +1129,7 @@ def tiling_for_h5(tile_que, save_que, h5_save_fp,
 
 def tiling_for_folder(tile_que, save_que, num_workers, locations, level, tile_size, overlap,
                       extract_coordinates, exclude_coordinates, random_save,
-                      random_save_ratio, extract_mode, object_thres, area_ratio,
+                      random_save_ratio, extract_mode, object_thresh, area_ratio,
                       cell_detector, cell_num_thresh, save_mask):
     if extract_mode == 'annotation':
         process_workers = num_workers
@@ -1149,7 +1149,7 @@ def tiling_for_folder(tile_que, save_que, num_workers, locations, level, tile_si
     process_threads = []
     for _ in range(process_workers):
         process_thread = Thread(target=process_tile, args=(tile_que, save_que, tile_size, extract_coordinates, exclude_coordinates, random_save,
-                                                           random_save_ratio, extract_mode, object_thres, area_ratio, cell_detector, cell_num_thresh))
+                                                           random_save_ratio, extract_mode, object_thresh, area_ratio, cell_detector, cell_num_thresh))
         process_thread.start()
         process_threads.append(process_thread)
 
@@ -1182,7 +1182,7 @@ def get_extract_exclude_coordinates(ano_file, extract_mode, extract_region_name,
         if not os.path.exists(ano_file):
             print("Error: annotation file not found")
         _, ano_format = os.path.splitext(ano_file)
-        # here could choose paser json or xml
+        # here could choose parse json or xml
         if ano_format in ('.json', '.geojson'):
             coordinates, classification_names = parse_json_annotation(ano_file)
         elif ano_format in ('.xml'):
@@ -1266,30 +1266,30 @@ class PathExtractor(object):
 
     Parameters:
         - save_path: (str), save path of all extracted tiles.
-        - csv_file: (str), for qu-path annotation file, as not all annotation drawed from level 0.
+        - csv_file: (str), for qu-path annotation file, as not all annotation drawn from level 0.
         - extract_mode: (str), must but int ['slide', 'annotation'], slide is extracted tile from all slide, annotation
                         will be extracted from annotation region.
-        - extract_region_name: (tuple[str]), the name of the annatotaion to extract, such as 'tumor'.
-        - exclude_region_name: (tuple[str]), the name of the annocation to exclude, such as 'background'.
+        - extract_region_name: (tuple[str]), the name of the annotation to extract, such as 'tumor'.
+        - exclude_region_name: (tuple[str]), the name of the annotation to exclude, such as 'background'.
         - mag: (int): assume your slide is saved by 40x, 20x, 10x, 5x, 3x, 2x, 1x order. If your slide is 40x, you can get 40x, if you
                       pass 40, on the other hand, if your slide is 20x, if you pass 40, you will not get it. you must pass under 20.
         - tile_size   : (int), Which the tile size you want to split from WSI, default is 512.
         - overlap     : (int), Control the tile is overlap or not, default is 0 which mean is not overlap, all method considered
-                        as non overlap, overlap tiles didnot tested if is ok.
+                        as non overlap, overlap tiles didn't tested if is ok.
         - save_mask: (bool), True to save the mask of tile.
         - include_bounds_size: (tuple[int, int] or int), size of the tile of slide boundary to included, if None, will be same as tile_size, which
                                 will not include boundary tile, if -1 will include all. if you set as (w, h), which will not include boundary tile
                                 size < w and tile size < h.
         - save_format : (string), format of the image you want to save the tiles, default is ".png".
-        - object_thres: (float), determine how much object is to be considered as backgroud, default is 0.1,
+        - object_thresh: (float), determine how much object is to be considered as background, default is 0.1,
                         means if less then 10% object, then will be consider as background. -1 will be save all, including background.
         - area_ratio: (tuple(float, float)), tuple of (float, float), range of area ratio between 0.0 (close) and 1.0 (open), (0.0, 1.0]
         - normalize   : (boolean), when normalize is True, will process WSI as normalized.
         - normalize_mpp: (boolean), if normalize the mpp to the same target mpp.
-        - target_mpp: (float), extract tile at the same mpp, otherwise, there might be some issuse if all slides are not from only one scanner.
+        - target_mpp: (float), extract tile at the same mpp, otherwise, there might be some issues if all slides are not from only one scanner.
         - resize       : (boolean), if True, then will resize the normalize tiles to the tile_size needed, otherwise will save physical tile_size.
         - target_size  : (int), tuple, tile resize to the target size.
-        - color_normalize: (bool), whether nomalized the tile or not, default is False.
+        - color_normalize: (bool), whether normalize the tile or not, default is False.
         - normalize_method: (string), normalization method, default is Macenko, optional: Vahadane, Macenko, Reinhard, Ruifrok.
         - random_save: (boolean) if random save the tile or not.
         - random_save_ratio: (float) how much the tile you want to save, should be in [0.0, 1.0], 1.0 mean save all.
@@ -1313,7 +1313,7 @@ class PathExtractor(object):
                  save_mask: bool = False,
                  include_bounds_size: Tuple[int, int] = None,
                  save_format: str = 'png',
-                 object_thres: float = 0.1,
+                 object_thresh: float = 0.1,
                  area_ratio: tuple = (0., 1.0),
                  cell_detect: bool = False,
                  cell_detect_min_thresh=10,
@@ -1346,7 +1346,7 @@ class PathExtractor(object):
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-        # where to extract the pactches from, if extract_mode is 'slide', then extract from slide, otherwise extract from annotation
+        # where to extract the patches from, if extract_mode is 'slide', then extract from slide, otherwise extract from annotation
         # if extract_mode is 'slide', then extract from which slide, if extract_mode is 'annotation', then extract from which annotation
         self.extract_mode = extract_mode
         assert self.extract_mode in [
@@ -1395,7 +1395,7 @@ class PathExtractor(object):
         else:
             self.save_format = save_format
         self.save_format = self.save_format.lower()
-        self.object_thres = object_thres
+        self.object_thresh = object_thresh
 
         assert area_ratio[0] >= 0, f'area ratio must be in [0.0, 1.0], but got {area_ratio}'
         assert area_ratio[1] <= 1, f'area ratio must be in [0.0, 1.0], but got {area_ratio}'
@@ -1472,7 +1472,7 @@ class PathExtractor(object):
         if slide is None:
             logger.info("Error: OpenSlide failed to open the WSI")
         else:
-            # get slide metrics for mpp normalization, to caculate the tile_size, also return mag
+            # get slide metrics for mpp normalization, to calculate the tile_size, also return mag
             self.slide_properties = get_slide_properties(slide)
             self.level = mag_to_level(
                 self.slide_properties['mag'], self.mag_target, self.mags)
@@ -1487,11 +1487,11 @@ class PathExtractor(object):
                     if self.random_extract:
                         file_name = file_name = os.path.join(self.save_path, f'{self.slide_name}_{self.extract_mode}_level_'
                                                              f'{self.level}_{self.tile_size}_{self.include_bounds_size}_'
-                                                             f'{self.object_thres}_{self.color}_random.png')
+                                                             f'{self.object_thresh}_{self.color}_random.png')
                     else:
                         file_name = os.path.join(self.save_path, f'{self.slide_name}_{self.extract_mode}_level_'
                                                  f'{self.level}_{self.tile_size}_{self.include_bounds_size}_'
-                                                 f'{self.object_thres}_{self.color}.png')
+                                                 f'{self.object_thresh}_{self.color}.png')
                     if not os.path.exists(file_name):
                         logger.info(
                             f'Test mode: to check the extraction if it\'s ok ... level: {self.level}, tile_size: {self.tile_size}')
@@ -1528,7 +1528,7 @@ class PathExtractor(object):
                             f'locations: {len(self.locations):,}, (m, n): ({num_tiles_width}, {num_tiles_height})')
 
                         draw_extract_regions(file_path, self.slide_properties, file_name, self.num_workers, self.level, self.locations,
-                                             extract_coordinates, exclude_coordinates, self.extract_mode, self.object_thres,
+                                             extract_coordinates, exclude_coordinates, self.extract_mode, self.object_thresh,
                                              self.area_ratio, self.random_save, self.random_save_ratio, self.cell_detector,
                                              self.cell_num_thresh, self.thickness, self.color, self.filled, self.scale_factor)
                     else:
@@ -1545,7 +1545,7 @@ class PathExtractor(object):
                     if (not P and not R) or (not Q and R):
                         # processing
                         logger.info(f'Processing {self.slide_name}...')
-                        # here we can get the slice annotation and selecte which region to be extracted from
+                        # here we can get the slice annotation and select which region to be extracted from
                         extract_coordinates, exclude_coordinates = get_extract_exclude_coordinates(ano_file, self.extract_mode,
                                                                                                    self.extract_region_name, self.exclude_region_name, xml_type=xml_type)
                         logger.info(
@@ -1583,7 +1583,7 @@ class PathExtractor(object):
                                 logger.info('tiling for h5...')
                                 tiling_for_h5(tile_que, save_que, self.h5_save_fp, self.num_workers+2, self.locations,
                                               self.deep_gen, self.deep_level, extract_coordinates, exclude_coordinates,
-                                              self.random_save, self.random_save_ratio, self.extract_mode, self.object_thres)
+                                              self.random_save, self.random_save_ratio, self.extract_mode, self.object_thresh)
                             else:
                                 logger.warning(
                                     f'{os.path.split(self.h5_save_fp)[-1]} already exists...')
@@ -1596,7 +1596,7 @@ class PathExtractor(object):
                             logger.info(f'tiling {self.slide_name}...')
                             tiling_for_folder(tile_que, save_que, self.num_workers, self.locations, self.level, self.tile_size, self.overlap,
                                               extract_coordinates, exclude_coordinates, self.random_save,
-                                              self.random_save_ratio, self.extract_mode, self.object_thres, self.area_ratio,
+                                              self.random_save_ratio, self.extract_mode, self.object_thresh, self.area_ratio,
                                               self.cell_detector, self.cell_num_thresh, self.save_mask)
                     else:
                         if self.save_hdf5:
@@ -1611,7 +1611,7 @@ class PathExtractor(object):
                                 # processing
                                 logger.warning(
                                     'directory exits but directory is empty, processing for folder')
-                                # here we can get the slide annotation and selecte which region to be extracted from
+                                # here we can get the slide annotation and select which region to be extracted from
                                 extract_coordinates, exclude_coordinates = get_extract_exclude_coordinates(ano_file, self.extract_mode,
                                                                                                            self.extract_region_name, self.exclude_region_name, xml_type=xml_type)
                                 logger.info(
@@ -1645,7 +1645,7 @@ class PathExtractor(object):
                                 logger.info(f'tiling {self.slide_name}...')
                                 tiling_for_folder(tile_que, save_que, self.num_workers, self.locations, self.level, self.tile_size, self.overlap,
                                                   extract_coordinates, exclude_coordinates, self.random_save,
-                                                  self.random_save_ratio, self.extract_mode, self.object_thres, self.area_ratio,
+                                                  self.random_save_ratio, self.extract_mode, self.object_thresh, self.area_ratio,
                                                   self.cell_detector, self.cell_num_thresh, self.save_mask)
                             else:
                                 logger.warning(
@@ -1670,16 +1670,16 @@ if __name__ == '__main__':
     save_path = './data/extract_patches_test'
     kwargs = dict(save_path=save_path,
                   csv_file=csv_file,
-                  extract_mode='slide',
+                  extract_mode='annotation',
                   extract_region_name=('tumor', ),
                   exclude_region_name=('normal',),
                   mag=20,
-                  patch_size=256,
+                  tile_size=256,
                   overlap=0,
                   save_mask=True,
                   include_bounds_size=None,
                   save_format='png',
-                  object_thres=0.1,
+                  object_thresh=0.1,
                   area_ratio=(0.3, 1.0),
                   cell_detect=False,
                   cell_detect_min_thresh=10,
@@ -1694,7 +1694,7 @@ if __name__ == '__main__':
                   # 2023-08-24 update, 1 is best performance for annotation mode, vary by tile size, 4 is best for slide mode
                   num_workers=16,
                   save_hdf5=False,
-                  random_extract=True,
+                  random_extract=False,
                   sample_rate=2,
                   iou_thresh=0.2,
                   normalize_mpp=False,
@@ -1703,7 +1703,7 @@ if __name__ == '__main__':
                   random_save=False,
                   random_save_ratio=0.6,
                   random_seed=4,
-                  test_draw_extract_regions=True,
+                  test_draw_extract_regions=False,
                   thickness=1,
                   # navy (0, 0, 128), medium blue(0, 0, 205), light green (125, 220, 0), red (238, 0, 0)
                   color=(0, 0, 205),

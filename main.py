@@ -7,9 +7,9 @@ from tqdm import tqdm
 from extract_patch import PathExtractor, get_dir_filename
 from logger import get_localtime, logger
 from utils import (format_arg, get_specified_files, str2bool,
-                   supress_ctypes_warnings)
+                   suppress_ctypes_warnings)
 
-supress_ctypes_warnings()
+suppress_ctypes_warnings()
 
 
 parser = argparse.ArgumentParser()

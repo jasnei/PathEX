@@ -12,12 +12,13 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import PIL
-from PIL import Image, ImageFilter, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 from sklearn.metrics import confusion_matrix
 
 
 def format_arg(args):
-    msg = "\n".join("--%s=%s \\" % (k, str(v)) for k, v in dict(vars(args)).items())
+    msg = "\n".join("--%s=%s \\" % (k, str(v))
+                    for k, v in dict(vars(args)).items())
     return "\n" + msg
 
 
@@ -43,14 +44,14 @@ def get_fn_without_suffix(path):
 
 
 def update_summary(epoch, train_metrics, eval_metrics, filename, write_header=False, log_wandb=False):
-    rowd = OrderedDict(epoch=epoch)
-    rowd.update([('train_' + k, v) for k, v in train_metrics.items()])
-    rowd.update([('valid_' + k, v) for k, v in eval_metrics.items()])
+    row = OrderedDict(epoch=epoch)
+    row.update([('train_' + k, v) for k, v in train_metrics.items()])
+    row.update([('valid_' + k, v) for k, v in eval_metrics.items()])
     with open(filename, mode='a') as cf:
-        dw = csv.DictWriter(cf, fieldnames=rowd.keys())
+        dw = csv.DictWriter(cf, fieldnames=row.keys())
         if write_header:  # first iteration (epoch == 1 can't be used)
             dw.writeheader()
-        dw.writerow(rowd)
+        dw.writerow(row)
 
 
 class GaussianBlur(object):
@@ -116,9 +117,9 @@ class CutOut(object):
             return img
 
         i, j, h, w, value = self.get_params(img,
-                                     scale=self.scale,
-                                     ratio=self.ratio,
-                                     value=self.value)
+                                            scale=self.scale,
+                                            ratio=self.ratio,
+                                            value=self.value)
         img_draw = ImageDraw.Draw(img)
         img_draw.rectangle((i, j, h+i, w+j), fill=value, outline=None)
         return img
@@ -126,7 +127,7 @@ class CutOut(object):
     def get_params(self, img, scale, ratio, value):
 
         img_w, img_h = img.size
-        area =  img_w * img_h
+        area = img_w * img_h
         if value == 'random':
             value = tuple(np.random.randint(210, 255, (3,)))
         log_ratio = np.log(ratio)
@@ -138,7 +139,7 @@ class CutOut(object):
             w = int(round(np.sqrt(erase_area / aspect_ratio)))
             if not (h < img_h and w < img_w):
                 continue
-            
+
             i = random.randint(0, img_h - h + 1)
             j = random.randint(0, img_w - w + 1)
             # print(f'i, j, h, w, {i}, {j}, {h}, {w}')
@@ -315,7 +316,7 @@ def get_specified_files(folder_path,
     Parameters:
         - folder_path: str, The folder you want to get the files
         - suffixes   : list, list of all suffixes you want to get
-        - recurssive : bool, Which means if get from the folder of the folder_path or not. default is False
+        - recursive : bool, Which means if get from the folder of the folder_path or not. default is False
 
     Return:
         -  List of the files founded
@@ -334,12 +335,12 @@ def get_specified_files(folder_path,
 def create_save_path(save_path, second_dir=True):
     """
     Description:
-        - Create save, weight, traing_log folder for saving
+        - Create save, weight, training_log folder for saving
 
     Parameters:
         - save_path: input, save path you want to save the weight, train log, etc
 
-    Reture:
+    Return:
         - list of images
     """
     path, folder = os.path.split(save_path)
@@ -370,11 +371,11 @@ def create_save_path(save_path, second_dir=True):
 def precision_recall_acc_fscore(y_true, y_pred, beta=1.0):
     """
     Description:
-        - Caculate accuracy, precision, recall, f beta score, you could pass class label in string or integer
+        - Calculate accuracy, precision, recall, f beta score, you could pass class label in string or integer
 
     Parameters:
-        - y_true: input, groud truth labels
-        - y_pred: input, prediction labls
+        - y_true: input, ground truth labels
+        - y_pred: input, prediction labels
         - beta: float or int, f beta score, default is 1.0
 
     Returns:
@@ -476,7 +477,7 @@ def resize_pad(img, width=224, height=224):
     return img_resize
 
 
-def get_biggest_roi(img, thred=15):
+def get_biggest_roi(img, thres=15):
     # save_file_path
     # img = cv2.imread(img_path)
     img_h, img_w = img.shape[:2]
@@ -535,7 +536,7 @@ def get_biggest_roi(img, thred=15):
         pnt_2_y = y + h
 
     # Test ROI
-    ## img_dst = cv2.rectangle(img, (pnt_1_x, pnt_1_y), (pnt_2_x, pnt_2_y), (0, 0, 255), 1)
+    # img_dst = cv2.rectangle(img, (pnt_1_x, pnt_1_y), (pnt_2_x, pnt_2_y), (0, 0, 255), 1)
 
     if img.ndim == 3:
         temp = img[pnt_1_y:pnt_2_y, pnt_1_x:pnt_2_x, :]
@@ -555,7 +556,7 @@ def random_brighten_img(img, **kargs):
         - img: input uint8 [0, 255] RGB image
         - kargs: fixed: bool, if fixed alpha all the time, if True, alpha will have to passed
                  alpha: float, if alpha=1, then output should be same as input, 
-                 if alpha < 1, will be darker, if alpha > 1, brither
+                 if alpha < 1, will be darker, if alpha > 1, brighter
     """
     fixed = False
     if kargs:
@@ -612,7 +613,7 @@ def random_brightness(img, **kargs):
         - img: input uint8 [0, 255] RGB image
         - kargs: fixed: bool, if fixed alpha all the time, if True, alpha will have to passed
                  alpha: float, if alpha=1, then output should be same as input, 
-                 if alpha < 1, will be darker, if alpha > 1, brither
+                 if alpha < 1, will be darker, if alpha > 1, brighter
     Returns:
         - return image transformed
     """
@@ -645,8 +646,8 @@ if __name__ == "__main__":
     val_images = get_specified_files(val_folder, ['.png'], recursive=False)
 
     img_ori = Image.open(val_images[0]).convert("RGB")
-    get_alph = GetAlphaWithoutOne(lower=0.85, upper=1.25)
-    alpha = get_alph()
+    get_alpha = GetAlphaWithoutOne(lower=0.85, upper=1.25)
+    alpha = get_alpha()
     img = resize(np.array(img_ori), size=(480, 480))
     img = random_flip(img, 0)
     img = random_flip(img, 1)

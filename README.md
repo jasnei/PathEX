@@ -98,13 +98,19 @@ Contributions are welcome! Please read the contributing guidelines before gettin
 This project is licensed under GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Citation
-If you use this tool in your research, please cite the following paper:
+If you use this algorithm in your research, please cite the following paper:
 
 ```
-@article{patchex,
-  title={PatchEx: A Python-based Tool for Extracting Whole Slide Image Tiles},
-  author={<NAME> and <NAME> and <NAME> and <NAME> and <NAME>},
-  journal={arXiv preprint arXiv:2203.16155},
-  year={2022}
+@article{10.1371/journal.pone.0304702,
+    doi = {10.1371/journal.pone.0304702},
+    author = {Yang, Xinda AND Zhang, Ranze AND Yang, Yuan AND Zhang, Yu AND Chen, Kai},
+    journal = {PLOS ONE},
+    publisher = {Public Library of Science},
+    title = {PathEX: Make good choice for whole slide image extraction},
+    year = {2024},
+    month = {08},
+    volume = {19},
+    url = {https://doi.org/10.1371/journal.pone.0304702},
+    pages = {1-17},
 }
 ```

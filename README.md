@@ -12,14 +12,14 @@ images are extracted in a grid pattern, with a specified tile size. Argments are
 ```bash
 extract_mode='slide', mag=10,tile_size=512, overlap=0, save_format='png', object_thresh=0.1, area_ration=(0.3, 1.0), random_extract=False, test_draw_extract_regions=True, scale_factor=32
 ```
-<img src="images/CMU-1_slide_level_1_512_(512, 512)_0.1_(0, 0, 205).png" width="500" />
+<img src="images/CMU-1_slide_level_1_512_(512, 512)_0.1_(0, 0, 205).png" width=640/>
 
 ### Slide level Random extraction:
 Tile images are extracted randomly.
 ```bash
 extract_mode='slide', mag=10, tile_size=256, overlap=0, save_format='png', object_thresh=0.1, area_ration=(0.3, 1.0), random_extract=True, test_draw_extract_regions=True, scale_factor=32
 ```
-<img src="images/CMU-1_slide_level_1_256_(256, 256)_0.1_(0, 0, 205)_random.png" width="500" />
+<img src="images/CMU-1_slide_level_1_256_(256, 256)_0.1_(0, 0, 205)_random.png" width="640" />
 
 ### Annotation extraction:
 To extract tiles from annotations, you need to provide the annotation file path and the corresponding WSI file path. The annotation file should be in the same format as the one used by the Aperio ImageScope software or the QuPath software. The tile extraction will be done based on the annotation coordinates. We recommend using the Aperio ImageScope software to create the annotation file.
@@ -27,7 +27,7 @@ To extract tiles from annotations, you need to provide the annotation file path 
 ```bash
 extract_mode='slide', mag=10, tile_size=256, overlap=0, save_format='png', object_thresh=0.1, area_ration=(0.3, 1.0), random_extract=False, test_draw_extract_regions=True, scale_factor=32
 ```
-<img src="images/CMU-1_annotation_level_1_256_(256, 256)_0.1_(0, 0, 205).png" width="500" />
+<img src="images/CMU-1_annotation_level_1_256_(256, 256)_0.1_(0, 0, 205).png" width="640" />
 
 
 ### Annotation random extraction:
@@ -35,7 +35,7 @@ You can also randomly extract tiles from annotations.
 ```bash
 extract_mode='slide', mag=10, tile_size=256, overlap=0, save_format='png', object_thresh=0.1, area_ration=(0.3, 1.0), random_extract=True, test_draw_extract_regions=True, scale_factor=32
 ```
-<img src="images/CMU-1_annotation_level_1_256_(256, 256)_0.1_(0, 0, 205)_random.png" width="500" />
+<img src="images/CMU-1_annotation_level_1_256_(256, 256)_0.1_(0, 0, 205)_random.png" width="640" />
 
 ### Prerequisites
 
